@@ -1,9 +1,7 @@
-import 'package:ecg/constants.dart';
-import 'package:ecg/screens/advice.dart';
-import 'package:ecg/screens/device.dart';
-import 'package:ecg/screens/ecg.dart';
-import 'package:ecg/screens/history.dart';
+
 import 'package:flutter/material.dart';
+
+import '../constants.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -62,7 +60,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('BottomNavigationBar Sample'),
-        backgroundColor: PrimaryColor,
+        backgroundColor: primaryColor,
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
@@ -72,26 +70,26 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-            backgroundColor: PrimaryColor,
+            backgroundColor: primaryColor,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.business),
             label: 'Business',
-            backgroundColor:PrimaryColor,
+            backgroundColor:primaryColor,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.school),
             label: 'School',
-            backgroundColor: PrimaryColor,
+            backgroundColor: primaryColor,
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
             label: 'Settings',
-            backgroundColor: PrimaryColor,
+            backgroundColor: primaryColor,
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: PrimaryDarkColor,
+        selectedItemColor: primaryDarkColor,
         onTap: _onItemTapped,
       ),
     );

@@ -1,6 +1,6 @@
-# ecg
+# polar_poc
 
-A new Flutter project.
+Poc ECG Polar H10
 
 ## Getting Started
 
