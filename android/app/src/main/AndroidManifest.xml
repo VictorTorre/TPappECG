@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.ecg">
+    package="com.example.polar_poc">
    <application
-        android:label="ecg"
+        android:label="polar_poc"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -34,4 +34,5 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+
 </manifest>

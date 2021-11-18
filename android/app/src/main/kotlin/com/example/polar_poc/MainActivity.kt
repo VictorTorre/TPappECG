@@ -1,4 +1,4 @@
-package com.example.ecg
+package com.example.polar_poc
 
 import io.flutter.embedding.android.FlutterActivity
 
