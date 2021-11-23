@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:polar/polar.dart';
+import 'package:polar_poc/screens/home.dart';
+
 
 void main() {
-  runApp(MyApp());
+  runApp(HomeScreen());
 }
 
 class MyApp extends StatefulWidget {

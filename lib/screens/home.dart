@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:polar_poc/screens/partial/ecg_partial_view.dart';
 
 import '../constants.dart';
 
@@ -30,15 +31,12 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
   static const TextStyle optionStyle =
   TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static const List<Widget> _widgetOptions = <Widget>[
+  List<Widget> _widgetOptions = <Widget>[
     Text(
       'Index 0: Home',
       style: optionStyle,
     ),
-    Text(
-      'Index 1: Business',
-      style: optionStyle,
-    ),
+    EcgPartialView(),
     Text(
       'Index 2: School',
       style: optionStyle,
@@ -73,8 +71,8 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             backgroundColor: primaryColor,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.business),
-            label: 'Business',
+            icon: Icon(Icons.health_and_safety_rounded),
+            label: 'ECG',
             backgroundColor:primaryColor,
           ),
           BottomNavigationBarItem(
