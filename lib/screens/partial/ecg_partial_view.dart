@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:gcloud/pubsub.dart';
+import 'package:googleapis_auth/auth_io.dart' as auth;
+import 'package:flutter/services.dart' show rootBundle;
 
 class EcgPartialView extends StatefulWidget {
   EcgPartialView({Key? key}) : super(key: key);
@@ -96,9 +100,42 @@ class _EcgPartialView extends State<EcgPartialView> {
     -164
   ];
 
+  void sentToGCloud() async {
+    // Read the service account credentials from the file.
+    var jsonCredentials =
+        await rootBundle.loadString('assets/jsoncredentials_dev_pub.json');
+    ;
+    var credentials =
+        new auth.ServiceAccountCredentials.fromJson(jsonCredentials);
+
+    // Get an HTTP authenticated client using the service account credentials.
+    var client = await auth.clientViaServiceAccount(credentials, PubSub.SCOPES);
+
+    // Instantiate objects to access Cloud Datastore, Cloud Storage
+    // and Cloud Pub/Sub APIs.
+    var pubsub = new PubSub(client, 'systemheart');
+    var topic =
+        await pubsub.lookupTopic('projects/systemheart/topics/lectureECG');
+    var dummyData = {
+      'data': [40, 50, 50, 80],
+      'read_rate': '2021-11-04',
+      'user': 1
+    };
+    print(dummyData['data'].toString());
+
+    var response = await topic.publishString(dummyData.toString(), attributes: {
+      "data": dummyData['data'].toString(),
+      'read_rate': dummyData['read_rate'].toString(),
+      'user': dummyData['user'].toString()
+    });
+
+    print(response);
+  }
+
   @override
   void initState() {
     super.initState();
+    sentToGCloud();
     timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       while (points.length > limitCount) {
         points.removeAt(0);
