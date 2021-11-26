@@ -14,143 +14,22 @@ class EcgPartialView extends StatefulWidget {
 }
 
 class _EcgPartialView extends State<EcgPartialView> {
-  final identifier = '7E1B542A';
-  final Color colorLine = Colors.redAccent;
-
-  final limitCount = 100;
-  final points = <FlSpot>[];
-
-  double xValue = 0;
-  double step = 0.04;
+  final _limitCount = 100;
+  final _points = <FlSpot>[];
+  double _xValue = 0;
+  double _step = 0.04;
   bool _firstTime = true;
+  final Color _colorLine = Colors.redAccent;
+
+  Polar polar = Polar();
+
+  static const identifier = '7E1B542A';
   String _textState =
       "Active el Bluetooth y colóquese el dispositivo en el pecho para empezar por favor";
-  List<int> joinedECGdata = <int>[];
+  bool _startECG = false;
+  List<int> _joinedECGdata = <int>[];
 
-  //late Timer timer;
-  late final Polar polar;
-
-  // List<int> testData = <int>[
-  //   -198,
-  //   -206,
-  //   -203,
-  //   -206,
-  //   -215,
-  //   -206,
-  //   -201,
-  //   -218,
-  //   -218,
-  //   -208,
-  //   -225,
-  //   -240,
-  //   -227,
-  //   -220,
-  //   -215,
-  //   -194,
-  //   -184,
-  //   -194,
-  //   -196,
-  //   -196,
-  //   -191,
-  //   -174,
-  //   -169,
-  //   -184,
-  //   -196,
-  //   -186,
-  //   -152,
-  //   -116,
-  //   -101,
-  //   -128,
-  //   -155,
-  //   -157,
-  //   -150,
-  //   -150,
-  //   -150,
-  //   -157,
-  //   -189,
-  //   -206,
-  //   -186,
-  //   -143,
-  //   -9,
-  //   264,
-  //   417,
-  //   106,
-  //   -375,
-  //   -446,
-  //   -257,
-  //   -225,
-  //   -254,
-  //   -227,
-  //   -225,
-  //   -240,
-  //   -237,
-  //   -249,
-  //   -259,
-  //   -252,
-  //   -252,
-  //   -254,
-  //   -242,
-  //   -225,
-  //   -215,
-  //   -210,
-  //   -208,
-  //   -206,
-  //   -196,
-  //   -184,
-  //   -181,
-  //   -198,
-  //   -203,
-  //   -184,
-  //   -174,
-  //   -172,
-  //   -164
-  // ];
-
-  List<int> prepareECGdata() {
-    return <int>[];
-  }
-
-  void sentToGCloud() async {
-    // Read the service account credentials from the file.
-    var jsonCredentials =
-        await rootBundle.loadString('assets/jsoncredentials_dev_pub.json');
-    ;
-    var credentials =
-        new auth.ServiceAccountCredentials.fromJson(jsonCredentials);
-
-    // Get an HTTP authenticated client using the service account credentials.
-    var client = await auth.clientViaServiceAccount(credentials, PubSub.SCOPES);
-
-    // Instantiate objects to access Cloud Datastore, Cloud Storage
-    // and Cloud Pub/Sub APIs.
-    var pubsub = new PubSub(client, 'systemheart');
-    var topic =
-        await pubsub.lookupTopic('projects/systemheart/topics/lectureECG');
-    // var dummyData = {
-    //   'data': [40, 50, 50, 80],
-    //   'read_date': '2021-11-04',
-    //   'user': 1
-    // };
-    // print(dummyData['data'].toString());
-
-    var currentDatetime = DateTime.now();
-    var response = await topic.publishString(
-        'Envío de datos del wearable con fecha de ' +
-            DateFormat('dd-MM-yyyy:H:m:s').format(currentDatetime),
-        attributes: {
-          "data": joinedECGdata.toString(),
-          'read_date': DateFormat('yyyy-MM-dd').format(currentDatetime),
-          'user': '1'
-        });
-
-    print(response);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    polar = Polar();
+  void startECG() {
     polar.deviceConnectingStream.listen((_) => setState(() {
           _textState = "Conectando";
         }));
@@ -166,14 +45,14 @@ class _EcgPartialView extends State<EcgPartialView> {
             _firstTime = false;
           }
 
-          while (points.length > limitCount) {
-            points.removeAt(0);
+          while (_points.length > _limitCount) {
+            _points.removeAt(0);
           }
 
-          joinedECGdata.addAll(e.samples);
+          _joinedECGdata.addAll(e.samples);
           for (var i = 0; i < e.samples.length; i++) {
-            points.add(FlSpot(xValue, e.samples[i] / 1000.0));
-            xValue += step;
+            _points.add(FlSpot(_xValue, e.samples[i] / 1000.0));
+            _xValue += _step;
           }
 
           if ((e.timeStamp - currentTimestamp) / 1000000000 >= 60) {
@@ -194,67 +73,42 @@ class _EcgPartialView extends State<EcgPartialView> {
       });
     });
     polar.connectToDevice(identifier);
-    //sentToGCloud();
-    //timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {});
+    setState(() {
+      _startECG = true;
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            _textState,
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(
-            height: 12,
-          ),
-          points.isNotEmpty
-              ? SizedBox(
-                  height: 300,
-                  child: LineChart(
-                    LineChartData(
-                      minY: -1,
-                      maxY: 1,
-                      minX: points.first.x,
-                      maxX: points.last.x,
-                      lineTouchData: LineTouchData(enabled: false),
-                      clipData: FlClipData.all(),
-                      gridData: FlGridData(
-                        show: true,
-                        drawVerticalLine: false,
-                      ),
-                      lineBarsData: [
-                        line(points),
-                      ],
-                      titlesData: FlTitlesData(
-                        show: true,
-                        bottomTitles: SideTitles(
-                          showTitles: false,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              : Container()
-        ],
-      ),
-    );
+  void sentToGCloud() async {
+    // Read the service account credentials from the file.
+    var jsonCredentials =
+        await rootBundle.loadString('assets/jsoncredentials_dev_pub.json');
+    ;
+    var credentials =
+        new auth.ServiceAccountCredentials.fromJson(jsonCredentials);
+
+    // Get an HTTP authenticated client using the service account credentials.
+    var client = await auth.clientViaServiceAccount(credentials, PubSub.SCOPES);
+
+    // Instantiate objects to access Cloud Datastore, Cloud Storage
+    // and Cloud Pub/Sub APIs.
+    var pubsub = new PubSub(client, 'systemheart');
+    var topic =
+        await pubsub.lookupTopic('projects/systemheart/topics/lectureECG');
+
+    var currentDatetime = DateTime.now();
+    await topic.publishString(_joinedECGdata.toString(), attributes: {
+      'read_date': DateFormat('dd-MM-yyyy:H:m:s').format(currentDatetime),
+      'user': '1'
+    });
   }
 
-  LineChartBarData line(List<FlSpot> points) {
+  LineChartBarData line() {
     return LineChartBarData(
-      spots: points,
+      spots: _points,
       dotData: FlDotData(
         show: false,
       ),
-      colors: [colorLine.withOpacity(0), colorLine],
+      colors: [_colorLine.withOpacity(0), _colorLine],
       colorStops: [0.1, 1.0],
       barWidth: 4,
       isCurved: false,
@@ -262,8 +116,107 @@ class _EcgPartialView extends State<EcgPartialView> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    //startECG();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return !_startECG
+        ? Container(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                      child: Text("Captura de Datos del Electrocardiograma")),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("1. Permanecer en Reposo"),
+                      Text("2. No mover el dispositivo durante la prueba"),
+                      Text(
+                          "3. Los datos proporcionados serán enviados en su Centro de Salud"),
+                      Text("4. Los resultados serán visibles en el Hospital")
+                    ],
+                  ),
+                ),
+                Center(
+                  child: Container(
+                    width: 100,
+                    alignment: Alignment.center,
+                    margin: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(2.0)),
+                    child: TextButton(
+                      onPressed: () => startECG(),
+                      child: Text(
+                        "Empezar",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          )
+        : Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _textState,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                _points.isNotEmpty
+                    ? SizedBox(
+                        height: 300,
+                        child: LineChart(
+                          LineChartData(
+                            minY: -1,
+                            maxY: 1,
+                            minX: _points.first.x,
+                            maxX: _points.last.x,
+                            lineTouchData: LineTouchData(enabled: false),
+                            clipData: FlClipData.all(),
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                            ),
+                            lineBarsData: [
+                              line(),
+                            ],
+                            titlesData: FlTitlesData(
+                              show: true,
+                              bottomTitles: SideTitles(
+                                showTitles: false,
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container()
+              ],
+            ),
+          );
+  }
+
+  @override
   void dispose() {
-    //timer.cancel();
+    polar.disconnectFromDevice(identifier);
     super.dispose();
   }
 }
